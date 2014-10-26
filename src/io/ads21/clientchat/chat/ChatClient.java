@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.awt.*;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -12,24 +13,25 @@ public class ChatClient extends Frame implements Runnable {
   private static final long serialVersionUID = 3944557475584591603L;
   
   private Socket soc;
+  private String ip;
   private TextField tf;
   private TextArea ta;
   private Button btnSend, btnClose;
-  private String sendTo;
+  private String enviaPara;
   private String LoginName;
   private Thread t = null;
   private DataOutputStream dout;
   private DataInputStream din;
 
-  ChatClient(String LoginName, String chatwith) throws Exception {
+  public ChatClient(String LoginName, String chatwith) throws Exception {
     super(LoginName);
     this.LoginName = LoginName;
-    sendTo = chatwith;
+    enviaPara = chatwith;
     tf = new TextField(50);
     ta = new TextArea(50, 50);
-    btnSend = new Button("Send");
-    btnClose = new Button("Close");
-    soc = new Socket("127.0.0.1", 5217);
+    btnSend = new Button("Enviar");
+    btnClose = new Button("Fechar");
+    soc = new Socket(getIp(), 5217);
 
     din = new DataInputStream(soc.getInputStream());
     dout = new DataOutputStream(soc.getOutputStream());
@@ -38,6 +40,12 @@ public class ChatClient extends Frame implements Runnable {
     t = new Thread(this);
     t.start();
 
+  }
+  
+  private String getIp(){
+     ip = JOptionPane.showInputDialog("Digite o ip. Ex: 127.0.0.1");
+    return ip;
+    
   }
 
   void setup() {
@@ -55,14 +63,14 @@ public class ChatClient extends Frame implements Runnable {
   }
 
   public boolean action(Event e, Object o) {
-    if (e.arg.equals("Send")) {
+    if (e.arg.equals("Enviar")) {
       try {
-        dout.writeUTF(sendTo + " " + "DATA" + " " + tf.getText().toString());
-        ta.append("\n" + LoginName + " Says:" + tf.getText().toString());
+        dout.writeUTF(enviaPara + " " + "DATA" + " " + tf.getText().toString());
+        ta.append("\n" + LoginName + " Diz:" + tf.getText().toString());
         tf.setText("");
       } catch (Exception ex) {
       }
-    } else if (e.arg.equals("Close")) {
+    } else if (e.arg.equals("Fechar")) {
       try {
         dout.writeUTF(LoginName + " LOGOUT");
         System.exit(1);
@@ -105,7 +113,7 @@ public class ChatClient extends Frame implements Runnable {
   public void run() {
     while (true) {
       try {
-        ta.append("\n" + sendTo + " Diz :" + din.readUTF());
+        ta.append("\n" + enviaPara + " Diz :" + din.readUTF());
 
       } catch (Exception ex) {
         ex.printStackTrace();
